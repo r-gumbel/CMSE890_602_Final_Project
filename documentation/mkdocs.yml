@@ -1,1 +1,6 @@
-site_name: My Docs
+site_name: Worky McFlowflow
+
+nav:
+  - Home: index.md
+  - About: about.md
+theme: readthedocs
