@@ -1,1 +1,12 @@
-site_name: My Docs
+site_name: Hartree-Fock Modeling of Nuclear Structure
+
+theme: 
+  name: "material"
+
+nav:
+  - "Constructing a Workflow": index.md
+  - "Calculating and Benchmarking": tutorials.md
+  - "Capturing the Physics We Want": how-to-guides.md
+  - "VU-TDHF3D as Applied to Nuclear Structure Calculations": reference.md
+  - "The Snakemake Approach to Organizing Our Workflow": explanation.md
+
