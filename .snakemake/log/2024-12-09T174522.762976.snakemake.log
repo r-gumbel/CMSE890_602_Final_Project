@@ -1,0 +1,25 @@
+host: fedora
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job                        count
+-----------------------  -------
+generate_fortran_script        1
+total                          1
+
+Select jobs to execute...
+Execute 1 jobs...
+
+[Mon Dec  9 17:45:22 2024]
+localrule generate_fortran_script:
+    output: scripts/calculation.f90
+    jobid: 0
+    reason: Missing output files: scripts/calculation.f90
+    resources: tmpdir=/tmp
+
+[Mon Dec  9 17:45:23 2024]
+Finished job 0.
+1 of 1 steps (100%) done
+Complete log: .snakemake/log/2024-12-09T174522.762976.snakemake.log

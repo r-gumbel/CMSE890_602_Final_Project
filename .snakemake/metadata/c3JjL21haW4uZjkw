@@ -1,0 +1,1 @@
+{"record_format_version": 5, "code": null, "rule": "create_fortran_source", "input": [], "log": [], "params": [], "shellcmd": null, "incomplete": false, "starttime": 1733787811.6182532, "endtime": 1733787811.6612532, "job_hash": 8761964098922, "conda_env": null, "software_stack_hash": "d41d8cd98f00b204e9800998ecf8427e", "container_img_url": null, "input_checksums": {}}
