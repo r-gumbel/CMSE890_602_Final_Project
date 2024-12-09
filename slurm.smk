@@ -117,4 +117,15 @@ rule python_postprocessing:
         # The final script will pull values from the 
         # static TDHF calculations and compare them to 
         # a stored database in this directory.
-        
+        with open(input.fortran_result, 'r') as f_in:
+            fortran_result = f_in.read().strip()
+
+        with open(output[0], 'w') as f_out:
+            f_out.write(f"Fortran result" {fortran_result}\n")
+            f_out.write("Additional analysis could be performed here.\n")
+
+"""
+# Note: might could add additional configuration parameters here
+fortran_compiler: gfortran 
+slurm_account: your_account 
+"""
