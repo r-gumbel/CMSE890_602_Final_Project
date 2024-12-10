@@ -1,0 +1,1 @@
+{"record_format_version": 5, "code": null, "rule": "generate_slurm_script", "input": [], "log": [], "params": [], "shellcmd": null, "incomplete": false, "starttime": 1733853408.8692465, "endtime": 1733853408.9142463, "job_hash": 8793516220400, "conda_env": null, "software_stack_hash": "d41d8cd98f00b204e9800998ecf8427e", "container_img_url": null, "input_checksums": {}}

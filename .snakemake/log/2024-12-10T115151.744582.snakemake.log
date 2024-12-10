@@ -1,0 +1,6 @@
+host: fedora
+Building DAG of jobs...
+MissingInputException in rule all in file /home/gumbel/Desktop/CMSE890_602/CMSE890_602_Final_Project/tdhf.smk, line 5:
+Missing input files for rule all:
+    affected files:
+        test_tdhf.slurm
