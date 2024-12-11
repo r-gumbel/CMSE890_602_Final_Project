@@ -1,5 +1,5 @@
 sconfig:
-  'time_limit': '1:00:00'
+  'time_limit': '0:01:00'
   'ntasks': 1
   'nodes': 1
   'mem_per_cpu': '8G'

@@ -27,7 +27,7 @@ rule generate_slurm_script:
 #SBATCH --mem-per-cpu={slurm_config['mem_per_cpu']} # memory required per allocated CPU (core) in bytes
 #SBATCH --cpus-per-task={slurm_config['cpus-per-task']}          
 #SBATCH --job-name={slurm_config['job-name']}
-#SBATCH -A {slurm_config['A']}''')
+#!SBATCH -A {slurm_config['A']}''')
             f.write('\n')
             f.write('''########## Command Lines to Run ##########
 
@@ -72,14 +72,14 @@ module purge\n''')
    0 0                                          ipairf(1,if) if=1,nof
    0 0                                          ipairf(2,if) if=1,nof
    0 2000                                       nexadd, nexiter
-   26 20                                         nextra_n(if), if=1,nof
-   16 20                                         nextra_p(if), if=1,nof
+   20 20                                         nextra_n(if), if=1,nof
+   20 20                                         nextra_p(if), if=1,nof
   1                                             ifixb
   15.0  20.0   0.0                             ecm,rsep,xb
   12     1.0D-17                                mxp,terr
   10000      0.400D0                                nt,dt" > /mnt/home/gumbelri/CMSE890_602_Final*/test/run/tdhf3d.inp
 
-cd /mnt/home/gumbelri/test/run
+cd /mnt/home/gumbelri/CMSE890_602_Final_Project/test/run
 pwd
 # srun run 
 # scontrol show job $SLURM_JOB_ID     ### write job information to SLURM output file
