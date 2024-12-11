@@ -1,0 +1,17 @@
+#!/bin/sh
+##
+##     To build the TDHF code
+##
+cd bslib90
+make -f makefile.ifc
+echo " "
+cd ../tdhf
+make -f makefile.ifc
+#
+#                                         done
+cd ..
+echo " "
+echo " Done building the code"
+echo " "
+#
+#

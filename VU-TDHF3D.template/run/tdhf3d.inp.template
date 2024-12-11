@@ -1,0 +1,33 @@
+SLy4dL
+ 2                                             nof
+ 1                                             imode
+  0.0    0.0                                   centf(1,if) if=1,nof
+  0.0    0.0                                   centf(2,if) if=1,nof
+  0.0    0.0                                   centf(3,if) if=1,nof
+  0.0    0.0                                   boostf(1,if) if=1,nof
+  0.0    0.0                                   boostf(2,if) if=1,nof
+  0.0    0.0                                   boostf(3,if) if=1,nof
+ 00.0   00.0                                   euler_alpha(if)
+ 00.0   00.0                                    euler_beta(if)
+ 00.0   00.0                                   euler_gamma(if)
+ 46.0D0 238.0D0                                fmass(if) if=1,nof
+ 20.0D0 92.0D0                                 fcharg(if) if=1,nof
+ 3.0 3.0                                       radinf(1,if) if=1,nof
+ 3.0 3.0                                       radinf(2,if) if=1,nof
+ 3.0 3.0                                       radinf(3,if) if=1,nof
+ 0.020   35.0                                  x0dmp,e0dmp
+  1000  2500  6.0D-3 7.0D-2                   itrbx,mtrbx,serr,derr
+  1   10   00  10                               iprint,mprint,mplots,mplott
+  0000 0 2000 200                              irest,irwgs,mrests,mrestt
+  0 1                                          ifixcm,icoul
+  0 0.008 20  1.90 5e-5                               iconstr,q2in,mconstr,c0=(1.9),d0=(5e-5)
+  0 0 1 1                                      itimrev, itimrevs, iodds, hdiag
+  0 0                                          ipairf(1,if) if=1,nof
+  0 0                                          ipairf(2,if) if=1,nof
+  0 2000                                       nexadd, nexiter
+  20 20                                         nextra_n(if), if=1,nof
+  20 20                                         nextra_p(if), if=1,nof
+ 1                                             ifixb
+ 220.0 25.0   3.0                               ecm,rsep,xb
+ 12     1.0D-17                                mxp,terr
+ 2200      0.400D0                                nt,dt

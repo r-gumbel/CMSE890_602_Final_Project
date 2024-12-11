@@ -1,0 +1,16 @@
+#
+#      to build the b-spline library
+#
+
+CFLAGS= -free -warn all -diag-disable 10382 -diag-disable 8889 -nogen-interfaces -O3 -xHost -qopenmp-stubs
+
+.SUFFIXES: .f90
+
+NOBJECTS = bslib.o
+
+.f90.o:;  (cd $(<D); ifort -c $(CFLAGS) $(<F))
+
+all:     bslib.a
+
+bslib.a:      $(NOBJECTS)
+	ar vr bslib.a $(NOBJECTS)

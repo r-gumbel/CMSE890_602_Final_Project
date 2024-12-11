@@ -1,0 +1,17 @@
+#!/bin/sh
+##
+##     To build the HF code
+##
+cd bslib90
+make -f makefile.gcc
+echo " "
+cd ../tdhf
+make -f makefile.gcc
+#
+#                                         done
+cd ..
+echo " "
+echo " Done building the code"
+echo " "
+#
+#

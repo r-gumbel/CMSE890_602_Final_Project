@@ -1,0 +1,21 @@
+#!/bin/sh
+##
+##     To clean the HF code
+##
+cd bslib90
+rm -f *.o *.a *.mod *.il
+echo " "
+cd ../tdhf
+rm -f *.o *.a *.mod *.il
+echo " "
+cd ../run
+rm -f xtdhf
+rm -f xtdhf_mic
+#
+#                                         done
+cd ..
+echo " "
+echo " Done cleaning files"
+echo " "
+#
+#

@@ -1,0 +1,8 @@
+#!/bin/bash
+ulimit -s unlimited
+export OMP_STACKSIZE=2500m
+
+date
+export OMP_NUM_THREADS=32
+time ./xtdhf
+date

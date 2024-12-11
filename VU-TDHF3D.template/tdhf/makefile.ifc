@@ -1,0 +1,71 @@
+#
+ifeq ($(MKLROOT),)
+MKLROOT := /usr/ifc/mkl/latest
+endif
+NLIBS = -L${MKLROOT}/lib/intel64 -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -I${MKLROOT}/lib/modules ../bslib90/bslib.a -mkl=sequential ${MKLROOT}/lib/intel64/libmkl_lapack95_lp64.a
+CFLAGS= -free -warn all -diag-disable 10382 -diag-disable 8889 -nogen-interfaces -O3 -xHost -qopenmp-stubs -mkl=sequential -I../bslib90 -I${MKLROOT}/include/intel64/lp64
+
+.SUFFIXES: .f90
+
+NOBJECTS = \
+bustf.o          \
+bplina.o         \
+cmulx.o          \
+cmuly.o          \
+cmulz.o          \
+costep1.o        \
+costep2.o        \
+costep3.o        \
+costep4.o        \
+createdir.o      \
+cutoff.o         \
+densit.o         \
+divergence.o     \
+divpoint.o       \
+dmpxyz.o         \
+energy.o         \
+eorder.o         \
+fft_coulomb.o    \
+getin.o          \
+getpsi.o         \
+getslope.o       \
+gradient.o       \
+grid_plot.o      \
+grstep.o         \
+hpsi.o           \
+inertia.o        \
+isoenergy.o      \
+kine.o           \
+laplacian.o      \
+moments.o        \
+moment_c.o       \
+momentqx.o       \
+pagplt.o         \
+pairing.o        \
+psnorm.o         \
+putpsi.o         \
+qmomc.o          \
+rdtpsi.o         \
+reorder.o        \
+schmid.o         \
+setdmc.o         \
+setpsi.o         \
+shf3d_omp.o      \
+sinfo.o          \
+skyrme.o         \
+tdhf3d.o         \
+tevolv_omp.o     \
+tinfo.o          \
+trpsi.o          \
+tstep.o          \
+writebspl.o      \
+writeden.o       \
+wrtpsi.o         \
+yukrun.o
+
+.f90.o:;  (cd $(<D); ifort -c $(CFLAGS) $(<F))
+
+all:    xtdhf
+
+xtdhf:    $(NOBJECTS)
+	  ifort $(CFLAGS) -o ../run/xtdhf $(NOBJECTS) $(NLIBS)

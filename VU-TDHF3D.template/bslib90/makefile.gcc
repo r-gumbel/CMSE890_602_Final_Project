@@ -1,0 +1,16 @@
+#
+#      to build the b-spline library
+# Requires gcc >= 4.7.x
+CFLAGS= -c -Ofast -mavx -m64 -ffree-form -ffree-line-length-none -fimplicit-none -pedantic
+
+.SUFFIXES: .f90
+
+NOBJECTS = bslib.o
+
+.f90.o:;  (cd $(<D); gfortran -c $(CFLAGS) $(<F))
+
+all:     bslib.a
+
+bslib.a:  $(NOBJECTS)
+	  ar vr bslib.a $(NOBJECTS)
+

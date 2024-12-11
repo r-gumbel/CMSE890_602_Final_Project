@@ -1,0 +1,9 @@
+ 09 1 0 1                                      nordx,igrdx,ianlyzx,iperx
+ -31.0 25.0 56 0                               xmin,xmax,ncolx,imode
+ 0.0 0.0 0 -99                                 input termination string
+ 09 1 0 1                                      nordy,igrdy,ianlyzy,ipery
+ -14.0 14.0 28 0                               ymin,ymax,ncoly,imode
+ 0.0 0.0 0 -99                                 input termination string
+ 09 1 0 1                                      nordz,igrdz,ianlyzz,iperz
+ -32.0 24.0 56 0                               zmin,zmax,ncolz,imode
+ 0.0 0.0 0 -99                                 input termination string

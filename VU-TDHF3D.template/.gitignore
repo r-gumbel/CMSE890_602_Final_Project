@@ -1,0 +1,17 @@
+*.o
+*.mod
+A*
+*.res*
+*.inp*
+!skyrme.inp
+!pair.inp
+!*.template
+fort*
+*.out
+*.png
+*.tmp
+*.gif
+*.mp4
+*.old*
+*.a
+xtdhf

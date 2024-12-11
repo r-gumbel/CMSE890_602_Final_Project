@@ -1,0 +1,22 @@
+#!/bin/sh
+##
+##     To build the TDHF code
+##
+# find the number of cpu's
+# cat /proc/cpuinfo | grep processor | wc -l
+cpus=$( ls -d /sys/devices/system/cpu/cpu[[:digit:]]* | wc -w )
+#cpus=1
+
+cd bslib90
+make -j$cpus -f makefile.ifc_omp
+echo " "
+cd ../tdhf
+make -j$cpus -f makefile.ifc_omp
+#
+#                                         done
+cd ..
+echo " "
+echo " Done building the code"
+echo " "
+#
+#
