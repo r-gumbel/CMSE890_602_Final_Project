@@ -1,6 +1,9 @@
 #Snakefile
 import os
 
+# Define global variable working_dir
+working_dir = os.getcwd()
+
 # Default rule
 rule all:
     input:
@@ -39,12 +42,15 @@ module purge\n''')
             f.write(f'''# Load required modules
 {module_cmds}''')
             f.write('\n\n')
-            f.write('''cp -r /mnt/home/gumbelri/CMSE890_602_Final_Project/VU-TDHF3D.template /mnt/home/gumbelri/CMSE890_602_Final_Project/test
-cd /mnt/home/gumbelri/CMSE890_602_Final_Project/test
-pwd
+            f.write(f"""cp -r {working_dir}/VU-TDHF3D.template {working_dir}/test
+cd {working_dir}/test
+            """)
+            f.write('\n')
+            f.write('''pwd
 ./clean
-./build.ifc_omp_hpcc
+./build.ifc_omp_hpcc''')
 
+            f.write(''''
 echo "SLy4dL
 1                                             nof
 0                                             imode
@@ -77,9 +83,11 @@ echo "SLy4dL
 1                                             ifixb
 15.0  20.0   0.0                             ecm,rsep,xb
 12     1.0D-17                                mxp,terr
-10000      0.400D0                                nt,dt" > /mnt/home/gumbelri/CMSE890_602_Final_Project/test/run/tdhf3d.inp
+10000      0.400D0                                nt,dt" > ''') 
+            f.write(f'''{working_dir}/test/run/tdhf3d.inp \n
 
-cd /mnt/home/gumbelri/CMSE890_602_Final_Project/test/run/
-pwd
-srun run scontrol show job $SLURM_JOB_ID     ### write job information to SLURM output file
+cd {working_dir}/test/run/''')
+            f.write('''\npwd\n
+srun run 
+scontrol show job $SLURM_JOB_ID     ### write job information to SLURM output file
 js -j $SLURM_JOB_ID                 ### write resource usage to SLURM output file (powertools command)''')
