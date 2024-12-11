@@ -1,57 +1,29 @@
-#Snakefile
-import os
-
-# Define global variable working_dir
-working_dir = os.getcwd()
-run_dir = 'Ca40'
-
-# Default rule
-rule all:
-    input:
-        "test_tdhf.slurm"
-
-'''configfile' contains dictionaries 
-to populate both our .slurm script as 
-well as our tdhf3d.inp'''
-
-configfile: 'config.yaml'
-slurm_config=config['sconfig']
-
-rule generate_slurm_script:
-    output:
-        "test_tdhf.slurm"
-    run:
-        # Generate module load commands
-        module_cmds = '\n'.join([f'module load {module}' for module in config.get('modules', [])])
-        with open(output[0], 'w') as f:
-            f.write(f'''#!/bin/bash --login
-#SBATCH --time={slurm_config['time_limit']}  # limit of wall clock time          
-#SBATCH --ntasks={slurm_config['ntasks']}    # number of tasks, i.e. nodes that you require (same as -n)      
-#SBATCH --nodes={slurm_config['nodes']}      
-#SBATCH --mem-per-cpu={slurm_config['mem_per_cpu']} # memory required per allocated CPU (core) in bytes
-#SBATCH --cpus-per-task={slurm_config['cpus-per-task']}          
-#SBATCH --job-name={slurm_config['job-name']}
-#!SBATCH -A {slurm_config['A']}''')
-            f.write('\n')
-            f.write('''########## Command Lines to Run ##########
+#!/bin/bash --login
+#SBATCH --time=0:01:00  # limit of wall clock time          
+#SBATCH --ntasks=1    # number of tasks, i.e. nodes that you require (same as -n)      
+#SBATCH --nodes=1      
+#SBATCH --mem-per-cpu=8G # memory required per allocated CPU (core) in bytes
+#SBATCH --cpus-per-task=12          
+#SBATCH --job-name=TDHF_test
+#!SBATCH -A ptg
+########## Command Lines to Run ##########
 
 export OMP_STACKSIZE=512MB
 export OMP_NUM_THREADS=80
 ulimit -s unlimited
-module purge\n''')
-            f.write('\n')
-            f.write(f'''# Load required modules
-{module_cmds}''')
-            f.write('\n\n')
-            f.write(f"""cp -r {working_dir}/VU-TDHF3D.template {working_dir}/{run_dir}
-cd {working_dir}/{run_dir}
-            """)
-            f.write('\n')
-            f.write('''pwd
-./clean
-./build.ifc_omp_hpcc''')
+module purge
 
-            f.write(''''
+# Load required modules
+module load powertools
+module load intel/2023a
+module load FFTW
+
+cp -r /home/gumbel/Desktop/CMSE890_602/CMSE890_602_Final_Project/VU-TDHF3D.template /home/gumbel/Desktop/CMSE890_602/CMSE890_602_Final_Project/Ca40
+cd /home/gumbel/Desktop/CMSE890_602/CMSE890_602_Final_Project/Ca40
+            
+pwd
+./clean
+./build.ifc_omp_hpcc'
 echo "SLy4dL
 1                                             nof
 0                                             imode
@@ -84,11 +56,11 @@ echo "SLy4dL
 1                                             ifixb
 15.0  20.0   0.0                             ecm,rsep,xb
 12     1.0D-17                                mxp,terr
-10000      0.400D0                                nt,dt" > ''') 
-            f.write(f'''{working_dir}/{run_dir}/run/tdhf3d.inp \n
+10000      0.400D0                                nt,dt" > /home/gumbel/Desktop/CMSE890_602/CMSE890_602_Final_Project/Ca40/run/tdhf3d.inp 
 
-cd {working_dir}/{run_dir}/run/''')
-            f.write('''\npwd\n
+cd /home/gumbel/Desktop/CMSE890_602/CMSE890_602_Final_Project/Ca40/run/
+pwd
+
 srun run 
 scontrol show job $SLURM_JOB_ID     ### write job information to SLURM output file
-js -j $SLURM_JOB_ID                 ### write resource usage to SLURM output file (powertools command)''')
+js -j $SLURM_JOB_ID                 ### write resource usage to SLURM output file (powertools command)
