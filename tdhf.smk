@@ -40,7 +40,7 @@ module purge\n''')
 {module_cmds}''')
             f.write('\n\n')
             f.write('''cp -r /mnt/home/gumbelri/CMSE890_602_Final_Project/VU-TDHF3D.template /mnt/home/gumbelri/CMSE890_602_Final_Project/test
- cd /mnt/home/gumbelri/CSME890_602_Final*/test
+ cd /mnt/home/gumbelri/CMSE890_602_Final*/test
  pwd
  ./clean
  ./build.ifc_omp_hpcc
