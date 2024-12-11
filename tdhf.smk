@@ -81,7 +81,5 @@ echo "SLy4dL
 
 cd /mnt/home/gumbelri/CMSE890_602_Final_Project/test/run/
 pwd
-# srun run 
-# scontrol show job $SLURM_JOB_ID     ### write job information to SLURM output file
-# js -j $SLURM_JOB_ID                 ### write resource usage to SLURM output file (powetools command)
-# ''')
+srun run scontrol show job $SLURM_JOB_ID     ### write job information to SLURM output file
+js -j $SLURM_JOB_ID                 ### write resource usage to SLURM output file (powertools command)''')
