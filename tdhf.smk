@@ -39,7 +39,7 @@ module purge\n''')
             f.write(f'''# Load required modules
 {module_cmds}''')
             f.write('\n\n')
-            f.write('''# cp -r /mnt/home/gumbelri/CMSE890_602_Final_Project/VU-TDHF3D.template /mnt/home/gumbelriri/CMSE890_602_Final_Project/test
+            f.write('''cp -r /mnt/home/gumbelri/CMSE890_602_Final_Project/VU-TDHF3D.template /mnt/home/gumbelriri/CMSE890_602_Final_Project/test
  cd /mnt/home/gumbelri/CSME890_602_Final*/test
  pwd
  ./clean
