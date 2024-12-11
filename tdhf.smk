@@ -39,8 +39,8 @@ module purge\n''')
             f.write(f'''# Load required modules
 {module_cmds}''')
             f.write('\n\n')
-            f.write('''# cp -r /mnt/home/gumbel/CMSE890_602_Final_Project/VU-TDHF3D.template /mnt/home/gumbelri/CMSE890_602_Final_Project/test
- cd /mnt/home/gumbel/CSME890_602_Final*/test
+            f.write('''# cp -r /mnt/home/gumbelri/CMSE890_602_Final_Project/VU-TDHF3D.template /mnt/home/gumbelriri/CMSE890_602_Final_Project/test
+ cd /mnt/home/gumbelri/CSME890_602_Final*/test
  pwd
  ./clean
  ./build.ifc_omp_hpcc
@@ -77,9 +77,9 @@ module purge\n''')
   1                                             ifixb
   15.0  20.0   0.0                             ecm,rsep,xb
   12     1.0D-17                                mxp,terr
-  10000      0.400D0                                nt,dt" > /mnt/home/gumbelri/CMSE890_602_Final*/test/run/tdhf3d.inp
+  10000      0.400D0                                nt,dt" > /mnt/home/gumbelriri/CMSE890_602_Final*/test/run/tdhf3d.inp
 
-cd /mnt/home/gumbelri/CMSE890_602_Final_Project/test/run
+cd /mnt/home/gumbelriri/CMSE890_602_Final_Project/test/run
 pwd
 # srun run 
 # scontrol show job $SLURM_JOB_ID     ### write job information to SLURM output file
