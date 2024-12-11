@@ -20,7 +20,7 @@ rule generate_slurm_script:
         # Generate module load commands
         module_cmds = '\n'.join([f'module load {module}' for module in config.get('modules', [])])
         with open(output[0], 'w') as f:
-            f.write(f'''#!/bin/bash
+            f.write(f'''#!/bin/bash --login
 #SBATCH --time={slurm_config['time_limit']}  # limit of wall clock time          
 #SBATCH --ntasks={slurm_config['ntasks']}    # number of tasks, i.e. nodes that you require (same as -n)      
 #SBATCH --nodes={slurm_config['nodes']}      
