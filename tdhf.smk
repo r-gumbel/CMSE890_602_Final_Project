@@ -1,37 +1,24 @@
 #Snakefile
 import os
-# Default rule
 
+# Default rule
 rule all:
     input:
         "test_tdhf.slurm"
 
-# Slurm configuration dictionary
-# slurm_config = {
-#     'job_name': 'fortran_hello',
-#     'output_log': 'hello_output_%j.txt',
-#     'error_log': 'hello_error_%j.txt',
-#     'time_limit': '00:05:00', 
-#     'ntasks': 1,
-#     'mem': '1G',
-#     'partition': 'short',
-#     'modules': [
-#         # List of modules to load, if any
-#         # 'gcc/10.2.0'
-#     ]
-# }
+'''configfile' contains dictionaries 
+to populate both our .slurm script as 
+well as our tdhf3d.inp'''
 
 configfile: 'config.yaml'
-print(config)
 slurm_config=config['sconfig']
-print(slurm_config)
 
 rule generate_slurm_script:
     output:
         "test_tdhf.slurm"
     run:
         # Generate module load commands
-       # module_cmds = '\n'.join([f'module load {module}' for module in slurm_config.get('modules', [])])
+        module_cmds = '\n'.join([f'module load {module}' for module in config.get('modules', [])])
         with open(output[0], 'w') as f:
             f.write(f'''#!/bin/bash
 #SBATCH --time={slurm_config['time_limit']}  # limit of wall clock time          
@@ -47,12 +34,12 @@ rule generate_slurm_script:
 export OMP_STACKSIZE=512MB
 export OMP_NUM_THREADS=80
 ulimit -s unlimited
-module purge
-module load powertools
-module load intel/2023a
-module load FFTW
-
-# cp -r /mnt/research/ascsn/Richard/VU-TDHF3D.template /mnt/scratch/gumbelri/static_runs/inverseQF/Ag107_S
+module purge\n''')
+            f.write('\n')
+            f.write(f'''# Load required modules
+{module_cmds}''')
+            f.write('\n\n')
+            f.write('''# cp -r /mnt/research/ascsn/Richard/VU-TDHF3D.template /mnt/scratch/gumbelri/static_runs/inverseQF/Ag107_S
 # cd /mnt/scratch/gumbelri/static_runs/inverseQF/Ag107_S
 # ./clean
 # ./build.ifc_omp_hpcc
