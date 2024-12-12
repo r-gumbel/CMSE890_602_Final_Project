@@ -12,9 +12,12 @@ modules:
   - intel/2023a
   - FFTW
 
-tdhf_in:
-  'AL': 40
-  'ZL': 20
+skyrme:
+  - SLy4dL
+
+nucleus:
+  'A' : 40
+  'Z' : 20
   'alpha': 0.0
   'beta': 0.0
   'gamma': 0.0
