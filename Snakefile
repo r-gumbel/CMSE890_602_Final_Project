@@ -12,20 +12,35 @@ processes involved, including separate workflows:
 
 This main Snakefile workflow will be executed 
 by typing:
-    `snakemake -j1 --config nucleus.A=[Desired Value] nucleus.Z=20`
+    `snakemake -j1 --config A=48 Z=20`
 """
 
 # configuration file
 configfile: 'config.yaml'
 
-# Properly handle nested configuration with defaults
+# Debug print initial config
+print("Initial config state:")
+print(config)
+
+# Handle command line overrides for A and Z
+if 'A' in config:
+    config['nucleus']['A'] = int(config.pop('A'))
+if 'Z' in config:
+    config['nucleus']['Z'] = int(config.pop('Z'))
+
+# Set defaults if not provided
 if 'nucleus' not in config:
     config['nucleus'] = {}
     
-# Set defaults if not provided via command line
 config['nucleus'].setdefault('A', 40)
 config['nucleus'].setdefault('Z', 20)
 config['skyrme'] = config.get('skyrme', 'SLy4dL')
+
+# Debug print final configuration
+print("\nFinal configuration:")
+print(f"A = {config['nucleus']['A']}")
+print(f"Z = {config['nucleus']['Z']}")
+print(f"Skyrme = {config['skyrme']}")
 
 # Generate run ID automatically from parameters
 run_id = f"A_{config['nucleus']['A']}_Z_{config['nucleus']['Z']}_{config['skyrme']}"
