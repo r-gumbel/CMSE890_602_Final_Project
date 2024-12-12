@@ -2,6 +2,7 @@
 import numpy as np
 
 
+
 def beta(A: int | float, Z: int | float, Q: float) -> float:
     """Function to calculate deformation parameter `beta` of a nuclei in its ground state.
 
