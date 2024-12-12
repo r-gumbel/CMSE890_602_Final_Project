@@ -1,0 +1,39 @@
+host: fedora
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job                      count
+---------------------  -------
+generate_slurm_script        1
+script_maker                 1
+total                        2
+
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Dec 12 10:07:55 2024]
+localrule generate_slurm_script:
+    output: test_tdhf_SLy4dL.slurm
+    jobid: 1
+    reason: Missing output files: test_tdhf_SLy4dL.slurm
+    resources: tmpdir=/tmp
+
+[Thu Dec 12 10:07:55 2024]
+Finished job 1.
+1 of 2 steps (50%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Dec 12 10:07:55 2024]
+localrule script_maker:
+    input: test_tdhf_SLy4dL.slurm
+    jobid: 0
+    reason: Input files updated by another job: test_tdhf_SLy4dL.slurm
+    resources: tmpdir=/tmp
+
+[Thu Dec 12 10:07:55 2024]
+Finished job 0.
+2 of 2 steps (100%) done
+Complete log: .snakemake/log/2024-12-12T100755.639067.snakemake.log

@@ -4,7 +4,7 @@ import subprocess
 from datetime import datetime
 from pathlib import Path 
 
-""""
+"""
 This is the main workflow, which coordinates all the
 processes involved, including separate workflows:
     (i.) tdhf.smk (creates a slurm script to run VU-TDHF)
@@ -12,14 +12,18 @@ processes involved, including separate workflows:
 
 This main Snakefile workflow will be executed 
 by typing:
-    `snakemake -j1 --config nucleus.A=[Desired Value] nucleus.Z=20
-""""
+    `snakemake -j1 --config nucleus.A=[Desired Value] nucleus.Z=20`
+"""
+
+# configuration file
+configfile : 'config.yaml'
+
 # Set default nuclear parameters (will be overridden by command line)
-config["nucleus"] = {"A": 40, "Z": 20} if nucleus not in config else config["nucleus"]
+config["nucleus"] = {"A": 40, "Z": 20} if "nucleus" not in config else config["nucleus"]
 config['skyrme'] = "SLy4dL" if "skyrme" not in config else config["skyrme"]
 
 # Generate run ID automatically from parameters
-run_id = f"A{config['nucleus']['A']}Z{config['nucleus']['Z']}_{config['skyrme']}"
+run_id = f"A_{config['nucleus']['A']}_Z_{config['nucleus']['Z']}_{config['skyrme']}"
 
 # Include the TDHF workflow
 include: "tdhf.smk"
@@ -40,7 +44,7 @@ rule all:
 
 rule run_tdhf:
     input:
-        slurm_script = "test_tdhf_{run_id}.slurm"
+        slurm_script = f"test_tdhf_{run_id}.slurm"
     output:
         status = f"logs/{run_id}/tdhf_status.txt"
     run:

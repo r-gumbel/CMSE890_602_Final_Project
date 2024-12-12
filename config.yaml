@@ -1,5 +1,5 @@
 sconfig:
-  'time_limit': '0:01:00'
+  'time_limit': '0:10:00'
   'ntasks': 1
   'nodes': 1
   'mem_per_cpu': '8G'
@@ -16,8 +16,10 @@ skyrme:
   - SLy4dL
 
 nucleus:
-  'A' : 40
+  'A' : 48
   'Z' : 20
+  
+Euler:
   'alpha': 0.0
   'beta': 0.0
   'gamma': 0.0

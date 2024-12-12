@@ -1,0 +1,5 @@
+host: fedora
+Building DAG of jobs...
+WildcardError in rule run_tdhf in file /home/gumbel/Desktop/CMSE890_602/CMSE890_602_Final_Project/Snakefile, line 45:
+Wildcards in input files cannot be determined from output files: (rule run_tdhf, line 56, /home/gumbel/Desktop/CMSE890_602/CMSE890_602_Final_Project/Snakefile)
+'run_id'

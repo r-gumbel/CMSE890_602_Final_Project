@@ -1,25 +1,24 @@
 #Snakefile
 import os
 
+
 # Define global variable working_dir
 working_dir = os.getcwd()
-run_dir = 'Ca40'
+
+run_dir = f'A_{config["nucleus"]["A"]}_Z_{config["nucleus"]["Z"]}_{config["skyrme"]}'
+
 
 # Default rule
-rule all:
+rule script_maker:
     input:
-        "test_tdhf.slurm"
+        f"test_tdhf_{run_id}.slurm"   # Using run_id from main workflow for organization
 
-'''configfile' contains dictionaries 
-to populate both our .slurm script as 
-well as our tdhf3d.inp'''
 
-configfile: 'config.yaml'
 slurm_config=config['sconfig']
 
 rule generate_slurm_script:
     output:
-        "test_tdhf.slurm"
+        f"test_tdhf_{run_id}.slurm"
     run:
         # Generate module load commands
         module_cmds = '\n'.join([f'module load {module}' for module in config.get('modules', [])])
@@ -51,7 +50,7 @@ cd {working_dir}/{run_dir}
 ./clean
 ./build.ifc_omp_hpcc''')
 
-            f.write(''''
+            f.write('''
 echo "SLy4dL
 1                                             nof
 0                                             imode
@@ -63,10 +62,10 @@ echo "SLy4dL
 0.0    0.0                                   boostf(3,if) if=1,nof
 00.0   00.0                                   euler_alpha(if)
 00.0   00.0                                   euler_beta(if)
-00.0   00.0                                   euler_gamma(if)
-40.0D0 12.0D0                                fmass(if) if=1,nof
-20.0D0 6.0D0                                 fcharg(if) if=1,nof
-3.0 3.0                                       radinf(1,if) if=1,nof
+00.0   00.0                                   euler_gamma(if)\n''')
+            f.write(f'''{config['nucleus']['A']}.0D0 12.0D0                                fmass(if) if=1,nof
+{config['nucleus']['Z']}.0D0 6.0D0                                 fcharg(if) if=1,nof\n''')
+            f.write('''3.0 3.0                                       radinf(1,if) if=1,nof
 3.0 3.0                                       radinf(2,if) if=1,nof
 3.0 3.0                                       radinf(3,if) if=1,nof
 0.02   35.0                                  x0dmp,e0dmp
