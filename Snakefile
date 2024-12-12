@@ -1,6 +1,7 @@
 # Main snakefile 
 import os
 import subprocess
+import time
 from datetime import datetime
 from pathlib import Path 
 
@@ -12,7 +13,7 @@ processes involved, including separate workflows:
 
 This main Snakefile workflow will be executed 
 by typing:
-    `snakemake -j1 --config A=48 Z=20`
+    `snakemake -j1 --config A=[Desired Value] Z=[Desired Value]`
 """
 
 # configuration file
@@ -45,11 +46,26 @@ print(f"Skyrme = {config['skyrme']}")
 # Generate run ID automatically from parameters
 run_id = f"A_{config['nucleus']['A']}_Z_{config['nucleus']['Z']}_{config['skyrme']}"
 
-# Include the TDHF workflow
-include: "tdhf.smk"
+# Job monitoring functions
+def check_job_status(job_id):
+    """Check if a SLURM job is complete"""
+    result = subprocess.run(['squeue', '-j', job_id], 
+                          capture_output=True, text=True)
+    # If job not found in queue, it's complete
+    return result.stdout.count('\n') <= 1
+
+def wait_for_job(job_id):
+    """Wait for job to complete"""
+    while not check_job_status(job_id):
+        time.sleep(60)  # Check every minute
+    return True
 
 # Create basic log structure
 Path("logs/{run_id}").mkdir(parents=True, exist_ok=True)
+
+# Included workflows
+include: "tdhf.smk"
+include: "report.smk"
 
 def submit_and_get_jobid(script_path):
     """Submit SLURM job and return job ID"""
@@ -60,13 +76,14 @@ def submit_and_get_jobid(script_path):
 
 rule all:
     input:
-        f"logs/{run_id}/tdhf_status.txt"
+        f"logs/{run_id}/report.txt"
 
 rule run_tdhf:
     input:
         slurm_script = f"test_tdhf_{run_id}.slurm"
     output:
-        status = f"logs/{run_id}/tdhf_status.txt"
+        status = f"logs/{run_id}/tdhf_status.txt",
+        completion = f"logs/{run_id}/job_complete.txt"
     run:
         # Submit the job
         job_id = submit_and_get_jobid(input.slurm_script)
@@ -84,4 +101,12 @@ Skyrme: {config['skyrme']}
 
         print(f"Submitted TDHF job {job_id}")
         print(f"Check status with: squeue -j {job_id}")
-        print(f"Check logs at: {output.status}")
+        print(f"Waiting for job completion...")
+        # print(f"Check logs at: {output.status}")
+
+        # Wait for job completion
+        wait_for_job(job_id)
+
+        # Create completion marker
+        with open(output.completion, 'w') as f:
+            f.write(f"Job {job_id} completed at {datetime.now()}")
