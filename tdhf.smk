@@ -11,7 +11,7 @@ working_dir = os.getcwd()
 run_dir = f'A_{config["nucleus"]["A"]}_Z_{config["nucleus"]["Z"]}_{config["skyrme"]}'
 
 # Create dynamic job name
-# job_name = f"TDHF_A__{config['nucleus']['A']}_Z_{config['nucleus']['Z']}"
+ job_name = f"TDHF_A__{config['nucleus']['A']}_Z_{config['nucleus']['Z']}"
  
 # Default rule
 rule script_maker:
@@ -34,8 +34,6 @@ rule generate_slurm_script:
 #SBATCH --mem-per-cpu={slurm_config['mem_per_cpu']} # memory required per allocated CPU (core) in bytes
 #SBATCH --cpus-per-task={slurm_config['cpus-per-task']}          
 #SBATCH --job-name={job_name}
-#SBATCH --output={slurm_log_dir}/slurm-%j.out
-#SBATCH --error={slurm_log_dir}/slurm-%j.err
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user={slurm_config.get('mail_user', '')}
 #!SBATCH -A {slurm_config['A']}''')
