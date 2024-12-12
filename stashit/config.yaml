@@ -1,0 +1,26 @@
+sconfig:
+  time_limit: '1:00:00'
+  ntasks: 1
+  nodes: 1
+  mem_per_cpu: '8G'
+  cpus-per-task: 12
+  A: 'ptg'
+  mail_user: "gumbelri@msu.edu"
+
+modules:
+  - powertools
+  - intel/2023a
+  - FFTW
+
+skyrme:
+  - 'SLy4dL'
+
+nucleus:
+  'A' : 48
+  'Z' : 20
+  
+Euler:
+  'alpha': 0.0
+  'beta': 0.0
+  'gamma': 0.0
+  

@@ -2,21 +2,65 @@
 """
 This is our workflow that generates the slurm scripts for individual
 structure calculations of nuclei in their ground state.
+It can be used in tandem with the main Snakefile, which runs a larger
+workflow of job creation, submission, monitoring, and benchmarking.
+Or this .smk can be ran as a standalone slurm script generator for 
+a desired nucleus by entering into the command line either:
+
+`snakemake -f -s tdhf.smk`
+
+To use defaults in the config.yaml file.  Or:
+
+`snakemmake -f -s tdhf.smk --config nucleus.A=[Atomic Mass] nucleus.Z=[Atomic Number]`
+
+To override the neutron/proton configuration on file. 
 """
 import os
+import sys
 
-# Define variable for working directory
+# # Check if this is being run directly or included
+is_run_directly = sys.argv[0].endswith(".smk")
+
+# # Load config with fallback values
+configfile: "config.yaml"
+
+# # Set defaults if not provided by main workflow
+# if "nucleus" not in config:
+#     config["nucleus"] = {"A": 40, "Z": 20}
+# if "skyrme" not in config:
+#     config["skyrme"] = "SLy4dL"
+# if "sconfig" not in config:
+#     config["sconfig"] = {
+#         "time_limit": "02:00:00",
+#         "ntasks": 1,
+#         "nodes": 1, 
+#         "mem_per_cpu": "2G",
+#         "cpus-per-task": 8,
+#         "A": "ptg"
+#     }
+
+
+# Define global variables
 working_dir = os.getcwd()
-# Define run directory, following naming convetion of main workflow
 run_dir = f'A_{config["nucleus"]["A"]}_Z_{config["nucleus"]["Z"]}_{config["skyrme"]}'
+run_id = f'A_{config["nucleus"]["A"]}_Z_{config["nucleus"]["Z"]}_{config["skyrme"]}'
+
+
+# Create SLURM log directory structure
+slurm_log_dir = f"{working_dir}/{run_dir}/slurm_logs"
+# os.makedirs(slurm_log_dir, exist_ok=True)
 
 # Create dynamic job name
-# job_name = f"TDHF_A__{config['nucleus']['A']}_Z_{config['nucleus']['Z']}"
- 
-# Default rule
-rule script_maker:
-    input:
-        f"test_tdhf_{run_id}.slurm"     # run_id comes from main workflow
+job_name = f"TDHF_A__{config['nucleus']['A']}_Z_{config['nucleus']['Z']}"
+
+# # A conditionally defined 'rule all' for when tdhf.smk is ran directly
+# if is_run_directly:
+#     rule all:   
+#         input:
+#             f"test_tdhf_{run_id}.slurm"
+
+# if is_run_directly==False:
+#     os.makedirs(slurm_log_dir, exist_ok=True)
 
 slurm_config=config['sconfig']
 
