@@ -1,0 +1,31 @@
+host: fedora
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 4
+Rules claiming more threads will be scaled down.
+Job stats:
+job                      count
+---------------------  -------
+generate_slurm_script        1
+total                        1
+
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Dec 12 11:42:24 2024]
+localrule generate_slurm_script:
+    output: test_tdhf_A_48_Z_20_['SLy4dL'].slurm
+    jobid: 0
+    reason: Forced execution
+    resources: tmpdir=/tmp
+
+[Thu Dec 12 11:42:24 2024]
+Error in rule generate_slurm_script:
+    jobid: 0
+    output: test_tdhf_A_48_Z_20_['SLy4dL'].slurm
+
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look above for error message
+Complete log: .snakemake/log/2024-12-12T114224.579624.snakemake.log
+WorkflowError:
+At least one job did not complete successfully.
