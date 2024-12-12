@@ -10,8 +10,8 @@ working_dir = os.getcwd()
 # Define run directory, following naming convetion of main workflow
 run_dir = f'A_{config["nucleus"]["A"]}_Z_{config["nucleus"]["Z"]}_{config["skyrme"]}'
 
-# Create dynamic job name
- job_name = f"TDHF_A__{config['nucleus']['A']}_Z_{config['nucleus']['Z']}"
+# Create dynamic job name (fixed indentation)
+job_name = f"TDHF_A_{config['nucleus']['A']}_Z_{config['nucleus']['Z']}"
  
 # Default rule
 rule script_maker:

@@ -12,15 +12,13 @@ modules:
   - intel/2023a
   - FFTW
 
-skyrme:
-  - 'SLy4dL'
+skyrme: 'SLy4dL'
 
 nucleus:
-  'A' : 48
-  'Z' : 20
+  A: 48
+  Z: 20
   
 Euler:
-  'alpha': 0.0
-  'beta': 0.0
-  'gamma': 0.0
-  
+  alpha: 0.0
+  beta: 0.0
+  gamma: 0.0

@@ -16,11 +16,16 @@ by typing:
 """
 
 # configuration file
-configfile : 'config.yaml'
+configfile: 'config.yaml'
 
-# Set default nuclear parameters (will be overridden by command line)
-config["nucleus"] = {"A": 40, "Z": 20} if "nucleus" not in config else config["nucleus"]
-config['skyrme'] = "SLy4dL" if "skyrme" not in config else config["skyrme"]
+# Properly handle nested configuration with defaults
+if 'nucleus' not in config:
+    config['nucleus'] = {}
+    
+# Set defaults if not provided via command line
+config['nucleus'].setdefault('A', 40)
+config['nucleus'].setdefault('Z', 20)
+config['skyrme'] = config.get('skyrme', 'SLy4dL')
 
 # Generate run ID automatically from parameters
 run_id = f"A_{config['nucleus']['A']}_Z_{config['nucleus']['Z']}_{config['skyrme']}"
@@ -34,7 +39,7 @@ Path("logs/{run_id}").mkdir(parents=True, exist_ok=True)
 def submit_and_get_jobid(script_path):
     """Submit SLURM job and return job ID"""
     result = subprocess.run(['sbatch', script_path],
-                            capture_output=True, text=True)
+                          capture_output=True, text=True)
     job_id = result.stdout.strip().split()[-1]
     return job_id
 
@@ -50,7 +55,7 @@ rule run_tdhf:
     run:
         # Submit the job
         job_id = submit_and_get_jobid(input.slurm_script)
-
+        
         # Log the submission
         with open(output.status, 'w') as f:
             f.write(f"""TDHF Job Submitted
