@@ -18,26 +18,26 @@ To override the neutron/proton configuration on file.
 import os
 import sys
 
-# Check if this is being run directly or included
-is_run_directly = sys.argv[0].endswith("tdhf.smk")
+# # Check if this is being run directly or included
+# is_run_directly = sys.argv[0].endswith("tdhf.smk")
 
-# Load config with fallback values
-configfile: "config.yaml"
+# # Load config with fallback values
+# configfile: "config.yaml"
 
-# Set defaults if not provided by main workflow
-if "nucleus" not in config:
-    config["nucleus"] = {"A": 40, "Z": 20}
-if "skyrme" not in config:
-    config["skyrme"] = "SLy4dL"
-if "sconfig" not in config:
-    config["sconfig"] = {
-        "time_limit": "02:00:00",
-        "ntasks": 1,
-        "nodes": 1, 
-        "mem_per_cpu": "2G",
-        "cpus-per-task": 8,
-        "A": "ptg"
-    }
+# # Set defaults if not provided by main workflow
+# if "nucleus" not in config:
+#     config["nucleus"] = {"A": 40, "Z": 20}
+# if "skyrme" not in config:
+#     config["skyrme"] = "SLy4dL"
+# if "sconfig" not in config:
+#     config["sconfig"] = {
+#         "time_limit": "02:00:00",
+#         "ntasks": 1,
+#         "nodes": 1, 
+#         "mem_per_cpu": "2G",
+#         "cpus-per-task": 8,
+#         "A": "ptg"
+#     }
 
 
 # Define global variables
@@ -53,11 +53,11 @@ os.makedirs(slurm_log_dir, exist_ok=True)
 # Create dynamic job name
 job_name = f"TDHF_A__{config['nucleus']['A']}_Z_{config['nucleus']['Z']}"
 
-# A conditionally defined 'rule all' for when tdhf.smk is ran directly
-if is_run_directly:
-    rule all:   
-        input:
-            f"test_tdhf_{run_id}.slurm"
+# # A conditionally defined 'rule all' for when tdhf.smk is ran directly
+# if is_run_directly:
+#     rule all:   
+#         input:
+#             f"test_tdhf_{run_id}.slurm"
 
 slurm_config=config['sconfig']
 
