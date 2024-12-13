@@ -1,4 +1,4 @@
-# Main snakefile 
+# === MAIN SNAKEFILE (Snakefile) === 
 import os
 import subprocess
 import time
@@ -46,26 +46,21 @@ print(f"Skyrme = {config['skyrme']}")
 # Generate run ID automatically from parameters
 run_id = f"A_{config['nucleus']['A']}_Z_{config['nucleus']['Z']}_{config['skyrme']}"
 
-# Job monitoring functions
+# CHANGED: Added f-string formatting
+Path(f"logs/{run_id}").mkdir(parents=True, exist_ok=True)
+
+# MOVED: Helper functions before includes
 def check_job_status(job_id):
     """Check if a SLURM job is complete"""
     result = subprocess.run(['squeue', '-j', job_id], 
                           capture_output=True, text=True)
-    # If job not found in queue, it's complete
     return result.stdout.count('\n') <= 1
 
 def wait_for_job(job_id):
     """Wait for job to complete"""
     while not check_job_status(job_id):
-        time.sleep(60)  # Check every minute
+        time.sleep(60)
     return True
-
-# Create basic log structure
-Path("logs/{run_id}").mkdir(parents=True, exist_ok=True)
-
-# Included workflows
-include: "tdhf.smk"
-include: "report.smk"
 
 def submit_and_get_jobid(script_path):
     """Submit SLURM job and return job ID"""
@@ -73,6 +68,10 @@ def submit_and_get_jobid(script_path):
                           capture_output=True, text=True)
     job_id = result.stdout.strip().split()[-1]
     return job_id
+
+# MOVED: Includes after all setup
+include: "tdhf.smk"
+include: "report.smk"
 
 rule all:
     input:
@@ -102,7 +101,6 @@ Skyrme: {config['skyrme']}
         print(f"Submitted TDHF job {job_id}")
         print(f"Check status with: squeue -j {job_id}")
         print(f"Waiting for job completion...")
-        # print(f"Check logs at: {output.status}")
 
         # Wait for job completion
         wait_for_job(job_id)
