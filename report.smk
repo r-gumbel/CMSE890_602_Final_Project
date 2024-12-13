@@ -21,23 +21,47 @@ def beta(A: int | float, Z: int | float, Q: float) -> float:
     return np.sqrt(5 * np.pi) / (3 * Z * R**2) * Q
 
 def parse_hfb_data(A, Z):
-    """Parse HFB data file and return matching nucleus data"""
+    """Parse HFB data file and return matching nucleus data
+    
+    Args:
+        A (int): Mass number
+        Z (int): Atomic number
+        
+    Returns:
+        dict: Nucleus data if found, None otherwise
+    """
     try:
         with open("HFB.data", 'r') as f:
+            # Skip any header rows by checking if the first field is numeric
             for line in f:
                 data = line.strip().split()
-                if len(data) >= 4:  # Ensure line has all required fields
-                    if int(data[0]) == A and int(data[1]) == Z:
+                if len(data) < 4:  # Skip lines that don't have enough fields
+                    continue
+                    
+                try:
+                    current_A = int(data[0])
+                    current_Z = int(data[1])
+                    
+                    if current_A == A and current_Z == Z:
                         return {
-                            'A': int(data[0]),
-                            'Z': int(data[1]),
+                            'A': current_A,
+                            'Z': current_Z,
                             'energy': float(data[2]),
                             'beta': float(data[3])
                         }
+                except ValueError:
+                    # Skip lines that don't have proper numeric values
+                    continue
+                    
+        print(f"No matching data found for A={A}, Z={Z}")
+        return None
+        
     except FileNotFoundError:
         print("Warning: HFB.data file not found")
         return None
-    return None
+    except Exception as e:
+        print(f"Error parsing HFB data: {e}")
+        return None
 
 def get_energy(working_dir, run_dir, config):
     """Extract energy value from output file"""
