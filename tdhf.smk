@@ -34,7 +34,7 @@ rule generate_slurm_script:
 #SBATCH --mem-per-cpu={slurm_config['mem_per_cpu']} # memory required per allocated CPU (core) in bytes
 #SBATCH --cpus-per-task={slurm_config['cpus-per-task']}          
 #SBATCH --job-name={job_name}
-#SBATCH --mail-type=BEGIN,END,FAIL
+#SBATCH --mail-type=END
 #SBATCH --mail-user={slurm_config.get('mail_user', '')}
 #!SBATCH -A {slurm_config['A']}''')
             f.write('\n')
@@ -96,4 +96,15 @@ cd {working_dir}/{run_dir}/run/''')
             f.write('''\npwd\n
 srun run 
 scontrol show job $SLURM_JOB_ID     ### write job information to SLURM output file
-js -j $SLURM_JOB_ID                 ### write resource usage to SLURM output file (powertools command)''')
+js -j $SLURM_JOB_ID                 ### write resource usage to SLURM output file (powertools command)
+
+# Wait for the report to be generated
+sleep 30  # Give some time for report generation
+
+# Check if report exists and email it
+if [ -f "{working_dir}/logs/{run_id}/report.txt" ]; then
+    mail -s "TDHF Job $SLURM_JOB_ID Report" $SLURM_JOB_MAIL_USER < "{working_dir}/logs/{run_id}/report.txt"
+else
+    echo "Report file not found" | mail -s "TDHF Job $SLURM_JOB_ID - Report Missing" $SLURM_JOB_MAIL_USER
+fi
+''')

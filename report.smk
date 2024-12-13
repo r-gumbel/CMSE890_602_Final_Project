@@ -20,6 +20,39 @@ def beta(A: int | float, Z: int | float, Q: float) -> float:
     R = 1.2 * A**(1/3)
     return np.sqrt(5 * np.pi) / (3 * Z * R**2) * Q
 
+def get_input_parameters(working_dir, run_dir):
+    """Extract serr tolerance value from input file
+    
+    Args:
+        working_dir (str): Working directory path
+        run_dir (str): Run directory name
+        
+    Returns:
+        float: serr value if found, None otherwise
+    """
+    input_file = Path(working_dir) / run_dir / "run" / "tdhf3d.inp"
+    
+    try:
+        with open(input_file, 'r') as f:
+            for line in f:
+                if 'serr' in line:
+                    # Line format: "7500  2500  6.0D-4 7.0D-2                   itrbx,mtrbx,serr,derr"
+                    parts = line.split()
+                    if len(parts) >= 3:
+                        try:
+                            # Convert scientific notation with 'D' to float
+                            serr_str = parts[2].replace('D', 'E')
+                            return float(serr_str)
+                        except (ValueError, IndexError) as e:
+                            print(f"Warning: Could not parse serr value: {e}")
+                            return None
+        print(f"Warning: No serr value found in {input_file}")
+        return None
+        
+    except FileNotFoundError:
+        print(f"Warning: Input file not found at {input_file}")
+        return None
+
 def parse_hfb_data(A, Z):
     """Parse HFB data file and return matching nucleus data
     
@@ -82,12 +115,10 @@ def get_energy(working_dir, run_dir, config):
     
     latest_file = max(matching_files, key=lambda p: p.stat().st_mtime)
     
-    # Updated grep command to match exact format
     cmd = f"grep 'energy      (mev) =    ' {latest_file}"
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     
     if result.stdout:
-        # Extract everything after the equals sign and convert to float
         energy_str = result.stdout.strip().split('=')[-1]
         try:
             energy_value = float(energy_str)
@@ -199,6 +230,7 @@ rule generate_report:
         tdhf_energy, tdhf_q20 = parse_output_file(working_dir, run_dir, config)
         iterations = get_iterations(working_dir, run_dir, config)
         hfb_data = parse_hfb_data(config['nucleus']['A'], config['nucleus']['Z'])
+        tolerance = get_input_parameters(working_dir, run_dir)
         
         # Calculate beta from Q20
         tdhf_beta = None
@@ -219,8 +251,14 @@ rule generate_report:
 ==============================================
 Generated: {datetime.now()}
 Run ID: {run_id}
-Nucleus: A={config['nucleus']['A']}, Z={config['nucleus']['Z']}
-Skyrme: {config['skyrme']}
+
+Initial Configuration:
+---------------------
+Nucleus: 
+  - Atomic Mass (A): {config['nucleus']['A']}
+  - Atomic Number (Z): {config['nucleus']['Z']}
+Skyrme Force: {config['skyrme']}
+Convergence Tolerance: {tolerance if tolerance is not None else 'Not found'}
 
 Analysis Results:
 -----------------
