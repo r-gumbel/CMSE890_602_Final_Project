@@ -28,6 +28,12 @@ if 'A' in config:
     config['nucleus']['A'] = int(config.pop('A'))
 if 'Z' in config:
     config['nucleus']['Z'] = int(config.pop('Z'))
+# Optional: validate email format
+if 'email' in config:
+    email = config.pop('email')
+    if '@' not in email:
+        raise ValueError("Invalid email format")
+    config['sconfig']['mail_user'] = email
 
 # Set defaults if not provided
 if 'nucleus' not in config:
