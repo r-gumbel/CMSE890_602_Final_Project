@@ -26,6 +26,10 @@ rule generate_slurm_script:
     run:
         # Generate module load commands
         module_cmds = '\n'.join([f'module load {module}' for module in config.get('modules', [])])
+        
+        # Get email address from config
+        email_address = slurm_config.get('mail_user', '')
+        
         with open(output[0], 'w') as f:
             f.write(f'''#!/bin/bash --login
 #SBATCH --time={slurm_config['time_limit']}  # limit of wall clock time          
@@ -35,7 +39,7 @@ rule generate_slurm_script:
 #SBATCH --cpus-per-task={slurm_config['cpus-per-task']}          
 #SBATCH --job-name={job_name}
 #SBATCH --mail-type=END
-#SBATCH --mail-user={slurm_config.get('mail_user', '')}
+#SBATCH --mail-user={email_address}
 #!SBATCH -A {slurm_config['A']}''')
             f.write('\n')
             f.write('''########## Command Lines to Run ##########
@@ -101,10 +105,21 @@ js -j $SLURM_JOB_ID                 ### write resource usage to SLURM output fil
 # Wait for the report to be generated
 sleep 30  # Give some time for report generation
 
+# Store email address from SLURM config
+EMAIL="{email_address}"
+
 # Check if report exists and email it
 if [ -f "{working_dir}/logs/{run_id}/report.txt" ]; then
-    mail -s "TDHF Job $SLURM_JOB_ID Report" $SLURM_JOB_MAIL_USER < "{working_dir}/logs/{run_id}/report.txt"
+    if [ ! -z "$EMAIL" ]; then
+        mail -s "TDHF Job $SLURM_JOB_ID Report" "$EMAIL" < "{working_dir}/logs/{run_id}/report.txt"
+    else
+        echo "No email address configured - report will not be sent"
+    fi
 else
-    echo "Report file not found" | mail -s "TDHF Job $SLURM_JOB_ID - Report Missing" $SLURM_JOB_MAIL_USER
+    if [ ! -z "$EMAIL" ]; then
+        echo "Report file not found" | mail -s "TDHF Job $SLURM_JOB_ID - Report Missing" "$EMAIL"
+    else
+        echo "No email address configured - error report will not be sent"
+    fi
 fi
 ''')
