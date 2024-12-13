@@ -7,7 +7,7 @@ completes.
 import subprocess
 from pathlib import Path
 from datetime import datetime
-import numpy as np  # NEW: Required for beta calculation
+import numpy as np
 
 def beta(A: int | float, Z: int | float, Q: float) -> float:
     """Function to calculate deformation parameter `beta` of a nuclei in its ground state.
@@ -20,7 +20,76 @@ def beta(A: int | float, Z: int | float, Q: float) -> float:
     R = 1.2 * A**(1/3)
     return np.sqrt(5 * np.pi) / (3 * Z * R**2) * Q
 
-# [Previous functions remain unchanged: parse_hfb_data, get_energy, get_Q20, parse_output_file]
+def parse_hfb_data(A, Z):
+    """Parse HFB data file and return matching nucleus data"""
+    try:
+        with open("HFB.data", 'r') as f:
+            for line in f:
+                data = line.strip().split()
+                if len(data) >= 4:  # Ensure line has all required fields
+                    if int(data[0]) == A and int(data[1]) == Z:
+                        return {
+                            'A': int(data[0]),
+                            'Z': int(data[1]),
+                            'energy': float(data[2]),
+                            'beta': float(data[3])
+                        }
+    except FileNotFoundError:
+        print("Warning: HFB.data file not found")
+        return None
+    return None
+
+def get_energy(working_dir, run_dir, config):
+    """Extract energy value from output file"""
+    search_dir = Path(working_dir) / run_dir / "run"
+    matching_files = list(search_dir.glob(f"AL_{config['nucleus']['A']}*/tdhf3d.out"))
+    
+    if not matching_files:
+        raise FileNotFoundError(f"No output files found in {search_dir}")
+    
+    latest_file = max(matching_files, key=lambda p: p.stat().st_mtime)
+    cmd = f"grep 'energy (mev)' {latest_file}"
+    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    
+    if result.stdout:
+        energy_str = result.stdout.strip().split('\n')[-1]
+        try:
+            energy_value = float(energy_str.split()[-1])
+            return energy_value
+        except (ValueError, IndexError):
+            print(f"Warning: Could not parse energy value from: {energy_str}")
+            return None
+    return None
+
+def get_Q20(working_dir, run_dir, config):
+    """Extract Q20 value from output file"""
+    search_dir = Path(working_dir) / run_dir / "run"
+    matching_files = list(search_dir.glob(f"AL_{config['nucleus']['A']}*/tdhf3d.out"))
+    
+    if not matching_files:
+        raise FileNotFoundError(f"No output files found in {search_dir}")
+    
+    latest_file = max(matching_files, key=lambda p: p.stat().st_mtime)
+    cmd = f"grep 'total:' {latest_file} | tail -1 | awk '{{print $3}}'"
+    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    
+    if result.stdout:
+        try:
+            return float(result.stdout.strip())
+        except ValueError:
+            print(f"Warning: Could not convert Q20 value to float: {result.stdout.strip()}")
+            return None
+    return None
+
+def parse_output_file(working_dir, run_dir, config):
+    """Parse the output file and return energy and Q20 values"""
+    try:
+        energy = get_energy(working_dir, run_dir, config)
+        Q20 = get_Q20(working_dir, run_dir, config)
+        return energy, Q20
+    except FileNotFoundError as e:
+        print(f"Error: {e}")
+        return None, None
 
 def calculate_relative_error(tdhf_val, hfb_val):
     """
@@ -63,7 +132,7 @@ rule generate_report:
         energy_error = None
         deformation_error = None
         
-        if hfb_data and tdhf_energy and tdhf_beta:
+        if hfb_data and tdhf_energy and tdhf_beta is not None:
             energy_error = calculate_relative_error(tdhf_energy, hfb_data['energy'])
             deformation_error = calculate_relative_error(tdhf_beta, hfb_data['beta'])
         
@@ -81,7 +150,7 @@ Analysis Results:
 TDHF Results:
 Energy: {tdhf_energy} MeV
 Q20: {tdhf_q20}
-Beta (converted): {tdhf_beta:.6f} if tdhf_beta else "Not calculated"}
+Beta (converted): {f'{tdhf_beta:.6f}' if tdhf_beta is not None else 'Not calculated'}
 
 HFB Comparison:
 """)
@@ -91,8 +160,8 @@ Beta: {hfb_data['beta']}
 
 Benchmarking Results:
 --------------------
-Energy Relative Error: {energy_error:.2f}% if energy_error else "Not calculated"}
-Beta Relative Error: {deformation_error:.2f}% if deformation_error else "Not calculated"}
+Energy Relative Error: {f'{energy_error:.2f}%' if energy_error is not None else 'Not calculated'}
+Beta Relative Error: {f'{deformation_error:.2f}%' if deformation_error is not None else 'Not calculated'}
 """)
             else:
                 f.write("No matching HFB data found for this nucleus\n")
