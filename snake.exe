@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Prompt for inputs
+echo -n "Enter atomic mass A: "
+read -r A
+
+echo -n "Enter atomic number Z: "
+read -r Z 
+
+# Email verification loop
+while true; do
+   echo -n "Enter email to be notified of job completion: "
+   read -r email1
+   echo -n "Verify email address: "
+   read -r email2
+   
+   if [ "$email1" = "$email2" ]; then
+       email=$email1
+       break
+   else
+       echo "Emails do not match. Please try again."
+   fi
+done
+
+# Basic input validation
+if ! [[ "$A" =~ ^[0-9]+$ ]]; then
+   echo "Error: A must be a positive integer"
+   exit 1
+fi
+
+if ! [[ "$Z" =~ ^[0-9]+$ ]]; then
+   echo "Error: Z must be a positive integer"
+   exit 1
+fi
+
+if ! [[ "$email" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$ ]]; then
+   echo "Error: Invalid email format"
+   exit 1
+fi
+
+# Execute snakemake with the provided values
+echo "Running calculation for nucleus A=$A Z=$Z"
+echo "Job completion notification will be sent to: $email"
+snakemake -j1 --config A=$A Z=$Z email=$email &
+
+echo "Job submitted to background"
