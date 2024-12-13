@@ -5,7 +5,7 @@ sconfig:
   mem_per_cpu: '8G'
   cpus-per-task: 12
   A: 'ptg'
-  mail_user: "gumbelri@msu.edu"
+  mail_user: ""
 
 modules:
   - powertools
