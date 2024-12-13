@@ -1,31 +1,124 @@
-# **Benchmarking static calculations of nuclei using VU-TDHF3d**
+# Nuclear Structure Calculation Workflow Pseudocode
 
-##(_Pseudocode to outline general logic of workflow_)
+## Main Workflow (Snakefile)
+```plaintext
+1. LOAD configuration from config.yaml
+2. IF command line arguments provided (A, Z):
+   - UPDATE configuration with command line values
+3. SET run_id based on nucleus parameters and Skyrme force
+4. CREATE log directory structure
+5. INCLUDE tdhf.smk and report.smk workflows
+6. DEFINE job monitoring functions:
+   a. check_job_status:
+      - CHECK if job exists in queue
+      - RETURN true if job complete
+   b. wait_for_job:
+      - MONITOR job status every minute
+      - RETURN when job completes
+7. SET target rule to require final report
+8. RUN workflow
+```
 
-### _Note: the emphasis here is on selecting pairs of nuclei which will later be used in a low energy (non-relativistic) collision.  This, then, provides the reason for selecting two nuclei at once, for their are certain decisions that need to prove consistent between pairs of nuclei (e.g. combining two ground state calculations with different interpolation setting will cause any time-dependent collision modeling to fail with this software)_
+## TDHF Workflow (tdhf.smk)
+```plaintext
+1. SET working directory and run directory paths
+2. CREATE job name from nucleus parameters
+3. DEFINE slurm script generation rule:
+   a. GENERATE module load commands
+   b. WRITE SLURM script header:
+      - Set time limit
+      - Set resource requirements
+      - Set job name
+      - Set email notifications
+   c. WRITE environment setup commands:
+      - Set OpenMP parameters
+      - Set system limits
+   d. COPY template directory to run directory
+   e. WRITE input file with:
+      - Nucleus parameters
+      - Calculation settings
+      - System configuration
+   f. ADD run commands:
+      - Execute calculation
+      - Record job information
+```
 
-### 1.) User selects two nuclei of interest for they will use VU-TDHF3D to calculate their ground state properties.  Note: the emphasis here is on selecting pairs of nuclei which will later be used in a low energy (non-relativistic) collision. 
-    * E.g.<sup>48</sup>Ca (Z=20, N=28) and <sup>208</sup>Pb (Z=82, N=126)
+## Report Generation Workflow (report.smk)
+```plaintext
+1. DEFINE output file parsing functions:
+   a. get_energy:
+      - SEARCH for output file in run directory
+      - FIND latest matching file
+      - EXTRACT energy value using grep
+      - RETURN energy value or None
+   
+   b. get_Q20:
+      - SEARCH for output file in run directory
+      - FIND latest matching file
+      - EXTRACT Q20 value using grep and awk
+      - RETURN Q20 value or None
+   
+   c. parse_output_file:
+      - CALL get_energy
+      - CALL get_Q20
+      - RETURN both values as tuple
+      - HANDLE any file not found errors
 
-### 2.) Prepare input files.  This consists mainly of the user selecting parameters in two main files--tdhf3d.inp and bspl.inp.
-    * tdhf3d.inp: Describes entrance channel concerns--e.g. mass, charge, quadrupole/octupole contraints--as well as specifies key features of the computation itself.  It also specifies elements of the computation--e.g. convergence tolerance/max no. iterations for self-consistently solving differential equations.
-    * bspl.inp: Sets dimensions of virtual box, as well as defines number of collocations/grid points for each each axes in our three dimensional cartesian coordinate space (x,y,z).
+2. DEFINE report generation rule:
+   a. REQUIRE job completion marker
+   b. PARSE output files for results
+   c. GENERATE report containing:
+      - Timestamp
+      - Run information
+      - Nucleus parameters
+      - Energy results
+      - Q20 results
+```
 
-### 3.) Use makefile to build code.  Essentially takes this step to compile and link all of the various fortran procedures that comprise a given VU-TDHF3D run, which will run in parallel.  Makefile templates are available within the code for both licensed compilers (ifort) and open sourced (gfortran), and running any of these creates an executable _xtdhf_.
+## Complete Workflow Execution Order
+```plaintext
+1. User Input Phase:
+   a. READ config.yaml
+   b. PROCESS command line arguments
+   c. SET final configuration
 
-### 4.) Run job. Depending on such factors as computer hardware, total nuclear mass of the system to be calculated, dimensions of the virtural box, and certain user specified conditions for computation (e.g. max iterations and convergence tolerance), each static run can take anywhere from several minutes to hours.  
+2. Preparation Phase:
+   a. CREATE directory structure
+   b. GENERATE run identifiers
+   c. PREPARE log directories
 
-### 5.) While running, program writes to output file _tdhf3d.out_.  User can specify how often program writes to file with parameter _mprint_. (Standard setting is every 20 iterations of the program).  Program also generates a _.static_ file for each nucleus.
+3. TDHF Calculation Phase:
+   a. GENERATE SLURM script
+   b. SUBMIT job to queue
+   c. MONITOR job status
+   d. WAIT for completion
+   e. CREATE completion marker
 
-### 6.) These three files--_tdhf3d.out, A1.static, A2.static_--are of great interest to us.
-    * _tdhf3d.out_ provides input to our benchmarking process.
-    * _A1.static, A2.static_ provides output to be stored for later use in dynamic calculations ***provided*** the benchmarking in the previous step goes well.
+4. Analysis Phase:
+   a. VERIFY job completion
+   b. LOCATE output files
+   c. EXTRACT relevant data
+   d. GENERATE analysis report
 
-### 7.) For each nuclei.
-    * _EHF_: final ground state energy of system calculated with VU-TDHF3D.
-    * _Beta_: Deformation of nucleus in its ground state.  This is calculated with the quadrupole moment associated with ground state energy.  
+5. Completion Phase:
+   a. ENSURE all files generated
+   b. CLEAN UP temporary files
+   c. REPORT final status
+```
 
-### 8.) Note: I'll need a section of the workflow devoted to extracting both of these g.s. observables. 
-    *If both _EHF_ and _Beta_ are within an acceptable proximity to values calculated with Hartree-Fock-Bogoliubov; workflow is complete.
-    * Else, jobs are flagged for one or both nuclei, error range is printed out, and user is prompted to return to step 2, restarting job with needed adjustments.  
-    
+## Dependency Chain
+```plaintext
+report.txt
+  └── job_complete.txt
+       └── TDHF job completion
+            └── test_tdhf_{run_id}.slurm
+                 └── Configuration
+```
+
+This workflow provides:
+- Automated job submission and monitoring
+- Structured input file generation
+- Systematic output analysis
+- Comprehensive result reporting
+
+The process runs automatically from submission to analysis, requiring only initial configuration input from the user.

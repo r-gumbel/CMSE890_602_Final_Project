@@ -7,72 +7,40 @@ completes.
 import subprocess
 from pathlib import Path
 from datetime import datetime
+import numpy as np  # NEW: Required for beta calculation
 
-def get_energy(working_dir, run_dir, config):
-    """Extract energy value from output file"""
-    # Construct the path pattern more safely
-    search_dir = Path(working_dir) / run_dir / "run"
-    # Use Path.glob to find all matching files
-    matching_files = list(search_dir.glob(f"AL_{config['nucleus']['A']}*/tdhf3d.out"))
-    
-    if not matching_files:
-        raise FileNotFoundError(f"No output files found in {search_dir}")
-    
-    # Get the latest file
-    latest_file = max(matching_files, key=lambda p: p.stat().st_mtime)
-    
-    # Use grep through subprocess with the actual file path
-    cmd = f"grep 'energy (mev)' {latest_file}"
-    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-    
-    # Get the last line of the output
-    if result.stdout:
-        energy = result.stdout.strip().split('\n')[-1]
-        return energy
-    return None
+def beta(A: int | float, Z: int | float, Q: float) -> float:
+    """Function to calculate deformation parameter `beta` of a nuclei in its ground state.
 
-def get_Q20(working_dir, run_dir, config):
-    """Extract Q20 value from output file"""
-    # Construct the path pattern more safely
-    search_dir = Path(working_dir) / run_dir / "run"
-    # Use Path.glob to find all matching files
-    matching_files = list(search_dir.glob(f"AL_{config['nucleus']['A']}*/tdhf3d.out"))
-    
-    if not matching_files:
-        raise FileNotFoundError(f"No output files found in {search_dir}")
-    
-    # Get the latest file
-    latest_file = max(matching_files, key=lambda p: p.stat().st_mtime)
-    
-    # Use grep and awk through subprocess with the actual file path
-    cmd = f"grep 'total:' {latest_file} | tail -1 | awk '{{print $3}}'"
-    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-    
-    # Return the stripped output
-    if result.stdout:
-        return result.stdout.strip()
-    return None
+    Args:
+        A (int or float): atomic mass (i.e. total no. nucleons)
+        Z (int or float): atomic number (i.e. total number of protons)
+        Q (float): quadrupole moment of nucleus in its ground state.  
+    """
+    R = 1.2 * A**(1/3)
+    return np.sqrt(5 * np.pi) / (3 * Z * R**2) * Q
 
-def parse_output_file(working_dir, run_dir, config):
-    """Parse the output file and return energy and Q20 values"""
+# [Previous functions remain unchanged: parse_hfb_data, get_energy, get_Q20, parse_output_file]
+
+def calculate_relative_error(tdhf_val, hfb_val):
+    """
+    Calculate relative error between TDHF and HFB values
+    relative_error = |experimental - theoretical|/|theoretical| * 100%
+    """
     try:
-        energy = get_energy(working_dir, run_dir, config)
-        Q20 = get_Q20(working_dir, run_dir, config)
-        return energy, Q20
-    except FileNotFoundError as e:
-        print(f"Error: {e}")
-        return None, None
-
-def debug_file_search(working_dir, run_dir, config):
-    """Debug function to print all found files"""
-    search_dir = Path(working_dir) / run_dir / "run"
-    print(f"Searching in: {search_dir}")
-    print(f"Looking for pattern: AL_{config['nucleus']['A']}*/tdhf3d.out")
-    
-    all_files = list(search_dir.glob(f"AL_{config['nucleus']['A']}*/tdhf3d.out"))
-    print(f"Found {len(all_files)} matching files:")
-    for f in all_files:
-        print(f"  {f}")
+        # Convert strings to floats if needed
+        tdhf_num = float(tdhf_val) if isinstance(tdhf_val, str) else tdhf_val
+        hfb_num = float(hfb_val) if isinstance(hfb_val, str) else hfb_val
+        
+        if hfb_num == 0:  # Avoid division by zero
+            return None
+            
+        rel_error = abs(tdhf_num - hfb_num) / abs(hfb_num) * 100.0
+        return rel_error
+        
+    except (ValueError, TypeError) as e:
+        print(f"Error calculating relative error: {e}")
+        return None
 
 rule generate_report:
     input:
@@ -82,12 +50,24 @@ rule generate_report:
     run:
         print("Generating report...")
         
-        # Debug file searching (can be removed once everything is working)
-        debug_file_search(working_dir, run_dir, config)
+        # Get the numerical values
+        tdhf_energy, tdhf_q20 = parse_output_file(working_dir, run_dir, config)
+        hfb_data = parse_hfb_data(config['nucleus']['A'], config['nucleus']['Z'])
         
-        # Get the analysis results
-        energy, Q20 = parse_output_file(working_dir, run_dir, config)
+        # Calculate beta from Q20
+        tdhf_beta = None
+        if tdhf_q20 is not None:
+            tdhf_beta = beta(config['nucleus']['A'], config['nucleus']['Z'], tdhf_q20)
         
+        # Calculate relative errors
+        energy_error = None
+        deformation_error = None
+        
+        if hfb_data and tdhf_energy and tdhf_beta:
+            energy_error = calculate_relative_error(tdhf_energy, hfb_data['energy'])
+            deformation_error = calculate_relative_error(tdhf_beta, hfb_data['beta'])
+        
+        # Write report
         with open(output.report, 'w') as f:
             f.write(f"""TDHF Analysis Report
 ==============================================
@@ -98,7 +78,23 @@ Skyrme: {config['skyrme']}
 
 Analysis Results:
 -----------------
-Energy: {energy}
-Q20: {Q20}
-            """)
-        print("Report generation complete")
+TDHF Results:
+Energy: {tdhf_energy} MeV
+Q20: {tdhf_q20}
+Beta (converted): {tdhf_beta:.6f} if tdhf_beta else "Not calculated"}
+
+HFB Comparison:
+""")
+            if hfb_data:
+                f.write(f"""Energy: {hfb_data['energy']} MeV
+Beta: {hfb_data['beta']}
+
+Benchmarking Results:
+--------------------
+Energy Relative Error: {energy_error:.2f}% if energy_error else "Not calculated"}
+Beta Relative Error: {deformation_error:.2f}% if deformation_error else "Not calculated"}
+""")
+            else:
+                f.write("No matching HFB data found for this nucleus\n")
+            
+        print("Report generation complete!")
