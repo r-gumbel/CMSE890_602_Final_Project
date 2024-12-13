@@ -95,54 +95,46 @@ def get_energy(working_dir, run_dir, config):
         except (ValueError, IndexError) as e:
             print(f"Warning: Could not parse energy value from: {energy_str}")
             print(f"Error details: {e}")
-            # Optionally print the full line for debugging
-            print(f"Full matched line: {result.stdout.strip()}")
             return None
     else:
         print(f"Warning: No energy value found in {latest_file}")
         return None
 
-def parse_hfb_data(A, Z):
-    """Parse HFB data file and return matching nucleus data
+def get_iterations(working_dir, run_dir, config):
+    """Extract final iteration count from output file
     
     Args:
-        A (int): Mass number
-        Z (int): Atomic number
+        working_dir (str): Working directory path
+        run_dir (str): Run directory name
+        config (dict): Configuration dictionary
         
     Returns:
-        dict: Nucleus data if found, None otherwise
+        int: Final iteration count if found, None otherwise
     """
-    try:
-        with open("HFB.data", 'r') as f:
-            # Skip any header rows by checking if the first field is numeric
-            for line in f:
-                data = line.strip().split()
-                if len(data) < 4:  # Skip lines that don't have enough fields
-                    continue
-                    
-                try:
-                    current_A = int(data[0])
-                    current_Z = int(data[1])
-                    
-                    if current_A == A and current_Z == Z:
-                        return {
-                            'A': current_A,
-                            'Z': current_Z,
-                            'energy': float(data[2]),
-                            'beta': float(data[3])
-                        }
-                except ValueError:
-                    # Skip lines that don't have proper numeric values
-                    continue
-                    
-        print(f"No matching data found for A={A}, Z={Z}")
-        return None
-        
-    except FileNotFoundError:
-        print("Warning: HFB.data file not found")
-        return None
-    except Exception as e:
-        print(f"Error parsing HFB data: {e}")
+    search_dir = Path(working_dir) / run_dir / "run"
+    matching_files = list(search_dir.glob(f"AL_{config['nucleus']['A']}*/tdhf3d.out"))
+    
+    if not matching_files:
+        raise FileNotFoundError(f"No output files found in {search_dir}")
+    
+    latest_file = max(matching_files, key=lambda p: p.stat().st_mtime)
+    
+    # Get the last occurrence of the iteration line
+    cmd = f"grep 'iteration         =' {latest_file} | tail -1"
+    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    
+    if result.stdout:
+        # Extract everything after the equals sign and convert to int
+        iter_str = result.stdout.strip().split('=')[-1]
+        try:
+            iter_value = int(iter_str)
+            return iter_value
+        except (ValueError, IndexError) as e:
+            print(f"Warning: Could not parse iteration value from: {iter_str}")
+            print(f"Error details: {e}")
+            return None
+    else:
+        print(f"Warning: No iteration count found in {latest_file}")
         return None
 
 def get_Q20(working_dir, run_dir, config):
@@ -205,6 +197,7 @@ rule generate_report:
         
         # Get the numerical values
         tdhf_energy, tdhf_q20 = parse_output_file(working_dir, run_dir, config)
+        iterations = get_iterations(working_dir, run_dir, config)
         hfb_data = parse_hfb_data(config['nucleus']['A'], config['nucleus']['Z'])
         
         # Calculate beta from Q20
@@ -235,6 +228,7 @@ TDHF Results:
 Energy: {tdhf_energy} MeV
 Q20: {tdhf_q20}
 Beta (converted): {f'{tdhf_beta:.6f}' if tdhf_beta is not None else 'Not calculated'}
+Iterations to Convergence: {iterations if iterations is not None else 'Not found'}
 
 HFB Comparison:
 """)
