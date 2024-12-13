@@ -40,10 +40,14 @@ rule generate_slurm_script:
 #SBATCH --cpus-per-task={slurm_config['cpus-per-task']}          
 #SBATCH --job-name={job_name}
 #SBATCH --mail-type=END
-#SBATCH --mail-user={email_address}
-#!SBATCH -A {slurm_config['A']}''')
-            f.write('\n')
-            f.write('''########## Command Lines to Run ##########
+#SBATCH --mail-user=''')
+            # Write email address directly
+            f.write(email_address)
+            # Continue with rest of SLURM directives
+            f.write(f'''
+#!SBATCH -A {slurm_config['A']}
+            
+########## Command Lines to Run ##########
 
 export OMP_STACKSIZE=512MB
 export OMP_NUM_THREADS=80
@@ -106,19 +110,22 @@ js -j $SLURM_JOB_ID                 ### write resource usage to SLURM output fil
 # Wait for the report to be generated
 sleep 30  # Give some time for report generation
 
-# Store email address from SLURM config
-EMAIL="${SLURM_JOB_MAIL_USER}"
+# Get absolute paths
+REPORT_PATH="${PWD%/*}/logs/${SLURM_JOB_NAME}/report.txt"
+echo "Looking for report at: $REPORT_PATH"
 
 # Check if report exists and email it
-if [ -f "{working_dir}/logs/{run_id}/report.txt" ]; then
-    if [ ! -z "$EMAIL" ]; then
-        mail -s "TDHF Job $SLURM_JOB_ID Report" "$EMAIL" < "{working_dir}/logs/{run_id}/report.txt"
+if [ -f "$REPORT_PATH" ]; then
+    if [ ! -z "$SLURM_JOB_MAIL_USER" ]; then
+        echo "Sending report to $SLURM_JOB_MAIL_USER"
+        mail -s "TDHF Job $SLURM_JOB_ID Report" "$SLURM_JOB_MAIL_USER" < "$REPORT_PATH"
     else
         echo "No email address configured - report will not be sent"
     fi
 else
-    if [ ! -z "$EMAIL" ]; then
-        echo "Report file not found" | mail -s "TDHF Job $SLURM_JOB_ID - Report Missing" "$EMAIL"
+    echo "Report file not found at $REPORT_PATH"
+    if [ ! -z "$SLURM_JOB_MAIL_USER" ]; then
+        echo "Report file not found at $REPORT_PATH" | mail -s "TDHF Job $SLURM_JOB_ID - Report Missing" "$SLURM_JOB_MAIL_USER"
     else
         echo "No email address configured - error report will not be sent"
     fi
