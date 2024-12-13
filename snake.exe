@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Navigate to directory containing snakefiles
+cd Snakefiles || { echo "Error: Snakefiles directory not found"; exit 1; }
+
 # Prompt for inputs
 echo -n "Enter atomic mass A: "
 read -r A

@@ -106,16 +106,19 @@ js -j $SLURM_JOB_ID                 ### write resource usage to SLURM output fil
 # Wait for the report to be generated
 sleep 30  # Give some time for report generation
 
+# Store email address from SLURM config
+EMAIL="${SLURM_JOB_MAIL_USER}"
+
 # Check if report exists and email it
-if [ -f "${working_dir}/logs/${run_id}/report.txt" ]; then
-    if [ ! -z "$SLURM_JOB_MAIL_USER" ]; then
-        mail -s "TDHF Job $SLURM_JOB_ID Report" "$SLURM_JOB_MAIL_USER" < "${working_dir}/logs/${run_id}/report.txt"
+if [ -f "{working_dir}/logs/{run_id}/report.txt" ]; then
+    if [ ! -z "$EMAIL" ]; then
+        mail -s "TDHF Job $SLURM_JOB_ID Report" "$EMAIL" < "{working_dir}/logs/{run_id}/report.txt"
     else
         echo "No email address configured - report will not be sent"
     fi
 else
-    if [ ! -z "$SLURM_JOB_MAIL_USER" ]; then
-        echo "Report file not found" | mail -s "TDHF Job $SLURM_JOB_ID - Report Missing" "$SLURM_JOB_MAIL_USER"
+    if [ ! -z "$EMAIL" ]; then
+        echo "Report file not found" | mail -s "TDHF Job $SLURM_JOB_ID - Report Missing" "$EMAIL"
     else
         echo "No email address configured - error report will not be sent"
     fi
