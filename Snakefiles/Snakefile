@@ -81,7 +81,7 @@ rule all:
 
 rule run_tdhf:
     input:
-        slurm_script = f"../test_tdhf_{run_id}.slurm"
+        slurm_script = f"../tdhf_{run_id}.slurm"
     output:
         status = f"../logs/{run_id}/tdhf_status.txt",
         completion = f"../logs/{run_id}/job_complete.txt"

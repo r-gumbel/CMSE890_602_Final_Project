@@ -17,13 +17,13 @@ job_name = f"TDHF_A_{config['nucleus']['A']}_Z_{config['nucleus']['Z']}"
 # Default rule
 rule script_maker:
     input:
-        f"../test_tdhf_{run_id}.slurm"     # run_id comes from main workflow
+        f"../tdhf_{run_id}.slurm"     # run_id comes from main workflow
 
 slurm_config=config['sconfig']
 
 rule generate_slurm_script:
     output:
-        f"../test_tdhf_{run_id}.slurm"
+        f"../tdhf_{run_id}.slurm"
     run:
         # Generate module load commands
         module_cmds = '\n'.join([f'module load {module}' for module in config.get('modules', [])])
@@ -108,7 +108,7 @@ scontrol show job $SLURM_JOB_ID     ### write job information to SLURM output fi
 js -j $SLURM_JOB_ID                 ### write resource usage to SLURM output file (powertools command)
 
 # Wait for the report to be generated
-sleep 30  # Give some time for report generation
+sleep 60  # Give some time for report generation
 
 # Get absolute paths
 REPORT_PATH="${PWD%/*}/logs/${SLURM_JOB_NAME}/report.txt"
