@@ -1,34 +1,58 @@
-# **CMSE890_602_Final_Project**
+# Nuclear Structure Calculation Workflow
 
 ## Overview
-This project aims to create a workflow to organize and benchmark Hartree-Fock calculations for modeling nuclei in their ground states.  
+A comprehensive workflow for Time-Dependent Hartree-Fock (TDHF) nuclear structure calculations, designed to streamline complex computational physics research.
 
-Or, as I like to call it: _"Was Something Left Undone?"_
+*"Was Something Left Undone?"*
 
----
+## Project Structure
+```
+.
+├── Snakefiles/           # Workflow management scripts
+├── VU-TDHF3D.template/   # Calculation template
+├── snake.exe             # Workflow launcher
+├── config.yaml           # Configuration settings
+├── HFB.data              # Reference nuclear data
+├── logs/                 # Calculation logs
+├── outputs/              # Calculation results
+└── slurm_scripts/        # Generated SLURM scripts
+```
 
 ## Motivation
-<span style="font-size:14px;">
-Understanding the dynamics of colliding nuclei—and the wide spectrum of resulting reactions—presents enormous challenges. These include:
-</span>
+Nuclear interaction modeling presents significant challenges:
+- Complex interplay of fundamental forces
+- Computationally intensive
+- Difficult to calibrate experimentally
 
-- <span style="font-size:14px;">The complex interplay of two fundamental forces: the Coulomb force and the nuclear strong force.</span>
-- <span style="font-size:14px;">Physics problems that are:</span>
-  - <span style="font-size:14px;">Analytically intractable,</span>
-  - <span style="font-size:14px;">Difficult to calibrate experimentally,</span>
-  - <span style="font-size:14px;">Computationally expensive.</span>
+## Computational Approach
+- **Method**: Time-Dependent Hartree-Fock (TDHF)
+- **Tool**: VU-TDHF3D
+- **Focus**: Ground state nuclear structure calculations
 
----
+## Quick Start
 
-## Goals
-<span style="font-size:14px;">
-- Develop a streamlined and reproducible workflow for Hartree-Fock calculations.
-- Benchmark the calculations to ensure accuracy and computational efficiency.
-</span>
+1. Configure `config.yaml`
+2. Make launcher executable
+   ```bash
+   chmod +x snake.exe
+   ```
 
----
+3. Run workflow
+   ```bash
+   ./snake.exe
+   ```
 
-## Why This Matters
-<span style="font-size:14px;">
-Modeling nuclear interactions accurately has profound implications in areas like nuclear energy, astrophysics, and fundamental particle physics. By creating a structured workflow, we aim to simplify these calculations and make them more accessible to researchers.
-</span>
+## Key Features
+- Automated SLURM job generation
+- Comprehensive result reporting
+- Benchmarking against reference data
+- Flexible configuration options
+
+## Usage
+Specify nucleus parameters interactively or via command line:
+```bash
+snakemake -j1 --config A=48 Z=20
+```
+
+## Documentation
+Detailed guides available in `docs/` directory using MkDocs.

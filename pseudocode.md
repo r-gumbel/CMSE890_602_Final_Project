@@ -3,122 +3,149 @@
 ## Main Workflow (Snakefile)
 ```plaintext
 1. LOAD configuration from config.yaml
-2. IF command line arguments provided (A, Z):
-   - UPDATE configuration with command line values
-3. SET run_id based on nucleus parameters and Skyrme force
-4. CREATE log directory structure
-5. INCLUDE tdhf.smk and report.smk workflows
-6. DEFINE job monitoring functions:
-   a. check_job_status:
-      - CHECK if job exists in queue
-      - RETURN true if job complete
-   b. wait_for_job:
-      - MONITOR job status every minute
-      - RETURN when job completes
-7. SET target rule to require final report
-8. RUN workflow
+2. IF command line arguments provided:
+ - OVERRIDE config with command line values for:
+   * A (Atomic Mass)
+   * Z (Atomic Number)
+   * email
+   * skyrme force
+3. SET default values if not provided:
+ - Default A: 40
+ - Default Z: 20
+ - Default Skyrme Force: SLy4dL
+4. GENERATE run_id:
+ - Format: "A_{A}_Z_{Z}_{Skyrme}"
+5. CREATE logs directory:
+ - Path: ../logs/{run_id}
+6. INCLUDE secondary workflow files:
+ - tdhf.smk
+ - report.smk
+7. DEFINE helper functions:
+ a. check_job_status:
+    - USE squeue to verify job completion
+ b. wait_for_job:
+    - POLL job status every 60 seconds
+ c. submit_and_get_jobid:
+    - SUBMIT SLURM script
+    - RETURN job ID
+8. DEFINE primary workflow rules:
+ a. all: REQUIRE final report generation
+ b. run_tdhf:
+    - GENERATE SLURM script
+    - SUBMIT job
+    - TRACK job status
+    - CREATE completion markers
 ```
 
-## TDHF Workflow (tdhf.smk)
+## TDHF Script Generation Workflow (tdhf.smk)
 ```plaintext
-1. SET working directory and run directory paths
-2. CREATE job name from nucleus parameters
-3. DEFINE slurm script generation rule:
-   a. GENERATE module load commands
-   b. WRITE SLURM script header:
-      - Set time limit
-      - Set resource requirements
-      - Set job name
-      - Set email notifications
-   c. WRITE environment setup commands:
-      - Set OpenMP parameters
-      - Set system limits
-   d. COPY template directory to run directory
-   e. WRITE input file with:
-      - Nucleus parameters
-      - Calculation settings
-      - System configuration
-   f. ADD run commands:
-      - Execute calculation
-      - Record job information
+1. SET working directory paths:
+ - Parent working directory
+ - Run-specific directory
+2. GENERATE dynamic job name:
+ - Based on A, Z values
+3. PREPARE SLURM script generation rule:
+ a. CONFIGURE SLURM directives:
+    - Time limit
+    - Resource allocation
+    - Job name
+    - Email notifications
+ b. SET environment variables:
+    - OpenMP stack size
+    - Thread count
+    - System limits
+ c. LOAD required modules dynamically
+ d. COPY template directory to run location
+ e. PREPARE input file (tdhf3d.inp):
+    - Nucleus parameters
+    - Computational domain settings
+    - Convergence parameters
+    - Numerical controls
+ f. EMBED run commands:
+    - Directory navigation
+    - Executable calls
+    - Job status tracking
+    - Report generation
+    - Optional email notification
 ```
 
 ## Report Generation Workflow (report.smk)
 ```plaintext
-1. DEFINE output file parsing functions:
-   a. get_energy:
-      - SEARCH for output file in run directory
-      - FIND latest matching file
-      - EXTRACT energy value using grep
-      - RETURN energy value or None
-   
-   b. get_Q20:
-      - SEARCH for output file in run directory
-      - FIND latest matching file
-      - EXTRACT Q20 value using grep and awk
-      - RETURN Q20 value or None
-   
-   c. parse_output_file:
-      - CALL get_energy
-      - CALL get_Q20
-      - RETURN both values as tuple
-      - HANDLE any file not found errors
+1. DEFINE data extraction functions:
+ a. get_energy:
+    - LOCATE most recent output file
+    - EXTRACT energy value
+    - HANDLE file/parsing errors
+ b. get_Q20:
+    - EXTRACT quadrupole moment
+    - USE grep/awk for parsing
+ c. get_iterations:
+    - FIND final iteration count
+ d. parse_hfb_data:
+    - READ reference HFB.data file
+    - MATCH nucleus parameters
+ e. calculate_relative_error:
+    - COMPUTE percentage difference
+    - HANDLE edge cases
 
 2. DEFINE report generation rule:
-   a. REQUIRE job completion marker
-   b. PARSE output files for results
-   c. GENERATE report containing:
-      - Timestamp
-      - Run information
-      - Nucleus parameters
-      - Energy results
-      - Q20 results
+ a. REQUIRE job completion marker
+ b. EXTRACT calculation results:
+    - Energy
+    - Q20
+    - Iterations
+    - Convergence parameters
+ c. PERFORM comparative analysis:
+    - Compare with HFB reference data
+    - Calculate relative errors
+ d. GENERATE comprehensive report:
+    - Timestamp
+    - Run configuration
+    - Calculation results
+    - Benchmarking metrics
+    - Error analysis
 ```
 
-## Complete Workflow Execution Order
+## Workflow Execution Sequence
 ```plaintext
-1. User Input Phase:
-   a. READ config.yaml
-   b. PROCESS command line arguments
-   c. SET final configuration
+1. Preparation Phase:
+ a. LOAD configuration
+ b. VALIDATE and PROCESS inputs
+ c. GENERATE run identifiers
+ d. PREPARE directory structure
 
-2. Preparation Phase:
-   a. CREATE directory structure
-   b. GENERATE run identifiers
-   c. PREPARE log directories
+2. TDHF Calculation Phase:
+ a. GENERATE SLURM script
+ b. SUBMIT job to cluster
+ c. MONITOR job status
+ d. WAIT for completion
+ e. CREATE completion markers
 
-3. TDHF Calculation Phase:
-   a. GENERATE SLURM script
-   b. SUBMIT job to queue
-   c. MONITOR job status
-   d. WAIT for completion
-   e. CREATE completion marker
+3. Analysis Phase:
+ a. VERIFY job completion
+ b. EXTRACT calculation data
+ c. PARSE output files
+ d. COMPARE with reference data
+ e. GENERATE detailed report
 
-4. Analysis Phase:
-   a. VERIFY job completion
-   b. LOCATE output files
-   c. EXTRACT relevant data
-   d. GENERATE analysis report
-
-5. Completion Phase:
-   a. ENSURE all files generated
-   b. CLEAN UP temporary files
-   c. REPORT final status
+4. Reporting Phase:
+ a. CREATE report.txt
+ b. OPTIONALLY email results
+ c. CLEAN temporary files
 ```
 
-## Dependency Chain
+## Dependency Hierarchy
 ```plaintext
 report.txt
-  └── job_complete.txt
-       └── TDHF job completion
-            └── test_tdhf_{run_id}.slurm
-                 └── Configuration
+ └── job_complete.txt
+     └── TDHF calculation output
+         └── tdhf3d.inp (input configuration)
+             └── Initial User Configuration
 ```
 
-This workflow provides:
-- Automated job submission and monitoring
-- Structured input file generation
-- Systematic output analysis
-- Comprehensive result reporting
-
-The process runs automatically from submission to analysis, requiring only initial configuration input from the user.
+Key Workflow Characteristics:
+- Fully automated nuclear structure calculation
+- Flexible configuration options
+- Comprehensive result tracking
+- Comparative data analysis
+- Automated reporting
