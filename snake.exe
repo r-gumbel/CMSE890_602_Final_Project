@@ -41,9 +41,9 @@ if ! [[ "$email" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$ ]]; then
    exit 1
 fi
 
-# Execute snakemake with the provided values
+# Execute snakemake with the provided values and rerun-incomplete flag
 echo "Running calculation for nucleus A=$A Z=$Z"
 echo "Job completion notification will be sent to: $email"
-snakemake -j1 --config A=$A Z=$Z email=$email &
+snakemake -j1 --rerun-incomplete --config A=$A Z=$Z email=$email &
 
 echo "Job submitted to background"
