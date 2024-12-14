@@ -84,7 +84,7 @@ echo "SLy4dL
 3.0 3.0                                       radinf(2,if) if=1,nof
 3.0 3.0                                       radinf(3,if) if=1,nof
 0.02   35.0                                  x0dmp,e0dmp
-5000  2500  6.0D-4 7.0D-2                   itrbx,mtrbx,serr,derr
+2500  2500  6.0D-3 7.0D-2                   itrbx,mtrbx,serr,derr
 1   20   00  20                               iprint,mprint,mplots,mplott
 0 0 200 200                              irest,irwgs,mrests,mrestt
 0 1                                          ifixcm,icoul
